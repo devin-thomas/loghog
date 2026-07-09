@@ -1,0 +1,37 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-and-run:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: starter
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 25
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "25"
+          cache: maven
+
+      - name: Build package
+        run: mvn -B clean package
+
+      - name: Generate sample log
+        run: java --add-modules jdk.incubator.vector -cp target/loghog-1.0-SNAPSHOT.jar com.loghog.LogGenerator sample.log 5000
+
+      - name: Run analyzer
+        run: java --add-modules jdk.incubator.vector -jar target/loghog-1.0-SNAPSHOT.jar sample.log
